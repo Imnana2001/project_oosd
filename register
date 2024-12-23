@@ -1,0 +1,78 @@
+import hashlib
+import re
+
+# File to store user data
+USER_DATA_FILE = "users.txt"
+
+# Function to hash passwords
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Function to validate email
+def is_valid_email(email):
+    email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    return re.match(email_regex, email)
+
+# Function to validate phone number
+def is_valid_phone(phone):
+    phone_regex = r'^\d{10}$'
+    return re.match(phone_regex, phone)
+
+# Function to check if email already exists
+def email_exists(email):
+    try:
+        with open(USER_DATA_FILE, "r") as file:
+            for line in file:
+                stored_email = line.strip().split(",")[1]
+                if stored_email == email:
+                    return True
+        return False
+    except FileNotFoundError:
+        return False
+
+# Register function
+def register():
+    print("\n--- Register ---")
+    print("1. User")
+    print("2. Financial Advisor")
+    role_choice = input("Choose your role (1 or 2): ").strip()
+    
+    if role_choice == "1":
+        role = "User"
+    elif role_choice == "2":
+        role = "Financial Advisor"
+    else:
+        print("Invalid choice. Please choose 1 or 2.")
+        return
+
+    name = input("Enter your name: ").strip()
+    email = input("Enter your email: ").strip()
+    if not is_valid_email(email):
+        print("Invalid email format. Try again.")
+        return
+
+    if email_exists(email):
+        print("An account with this email already exists. Try a different one.")
+        return
+
+    phone = input("Enter your phone number: ").strip()
+    if not is_valid_phone(phone):
+        print("Invalid phone number. It must be 10 digits. Try again.")
+        return
+
+    password = input("Enter a password: ").strip()
+    confirm_password = input("Confirm your password: ").strip()
+    if password != confirm_password:
+        print("Passwords do not match. Try again.")
+        return
+
+    hashed_password = hash_password(password)
+
+    # Write user data to the text file
+    with open(USER_DATA_FILE, "a") as file:
+        file.write(f"{name},{email},{phone},{role},{hashed_password}\n")
+
+    print(f"Registration successful! You are registered as a {role}.")
+
+if __name__ == "__main__":
+    register()
